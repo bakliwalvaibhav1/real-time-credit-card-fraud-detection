@@ -17,7 +17,7 @@ def generate_transaction():
         "card_type": random.choice(["VISA", "MASTERCARD", "AMEX"])
     }
 
-while True:
-    txn = generate_transaction()
-    print(txn)
-    time.sleep(1)
+# while True:
+#     txn = generate_transaction()
+#     # print(txn)
+#     time.sleep(1)
