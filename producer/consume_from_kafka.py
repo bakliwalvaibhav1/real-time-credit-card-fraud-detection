@@ -1,13 +1,16 @@
 from kafka import KafkaConsumer
 from pymongo import MongoClient
+from collections import defaultdict, deque
+from datetime import datetime, timedelta
 import json
 
-# Set up MongoDB client
+# MongoDB setup
 mongo_client = MongoClient("mongodb://localhost:27017")
 db = mongo_client.frauddb
-collection = db.transactions
+collection_all = db.transactions
+collection_flagged = db.flagged_transactions
 
-# Set up Kafka consumer
+# Kafka setup
 consumer = KafkaConsumer(
     'transactions',
     bootstrap_servers='localhost:9092',
@@ -19,15 +22,41 @@ consumer = KafkaConsumer(
 
 print("⏳ Waiting for transactions...\n")
 
+# In-memory tracker for high-frequency detection
+recent_txns = defaultdict(lambda: deque(maxlen=10))  # store last few timestamps per user
+
+def is_suspicious(txn: dict) -> bool:
+    # High Amount Rule
+    if txn["amount"] > 900:
+        return True
+
+    # High Frequency Rule
+    user_id = txn["user_id"]
+    txn_time = datetime.fromisoformat(txn["timestamp"])
+    recent = recent_txns[user_id]
+
+    # Remove old timestamps
+    recent = deque([t for t in recent if (txn_time - t).total_seconds() <= 10])
+    recent.append(txn_time)
+    recent_txns[user_id] = recent
+
+    if len(recent) >= 3:
+        return True
+
+    return False
+
 for message in consumer:
     raw = message.value
     try:
         txn = json.loads(raw)
         print(f"🔍 Received: {txn}")
 
-        # Insert into MongoDB
-        collection.insert_one(txn)
-        print("✅ Inserted into MongoDB!\n")
+        collection_all.insert_one(txn)
+        print("✅ Inserted into MongoDB (all)\n")
+
+        if is_suspicious(txn):
+            collection_flagged.insert_one(txn)
+            print("🚨 Fraud Detected! Inserted into flagged collection\n")
 
     except json.JSONDecodeError:
         print(f"⚠️ Skipped malformed message: {raw}")
