@@ -1,5 +1,6 @@
 import pandas as pd
 from pymongo import MongoClient
+from datetime import datetime
 import os
 
 # Connect to MongoDB
@@ -21,11 +22,17 @@ for txn in transactions:
 # Convert to DataFrame
 df = pd.DataFrame(transactions)
 
-# Make sure storage folder exists
-os.makedirs("storage/exported", exist_ok=True)
+# Timestamp-based folder
+now = datetime.utcnow()
+day = now.strftime("%Y-%m-%d")
+hour = now.strftime("hour=%H")
+output_dir = f"storage/exported/{day}/{hour}"
+os.makedirs(output_dir, exist_ok=True)
 
-# Export to Parquet
-output_path = "storage/exported/flagged.parquet"
+# Filename with timestamp to avoid collisions
+filename = f"flagged-{now.strftime('%Y%m%d-%H%M%S')}.parquet"
+output_path = os.path.join(output_dir, filename)
+
+# Write the file
 df.to_parquet(output_path, engine="pyarrow")
-
 print(f"✅ Exported {len(df)} transactions to {output_path}")
