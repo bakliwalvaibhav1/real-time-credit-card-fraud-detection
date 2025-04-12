@@ -1,6 +1,13 @@
 from kafka import KafkaConsumer
+from pymongo import MongoClient
 import json
 
+# Set up MongoDB client
+mongo_client = MongoClient("mongodb://localhost:27017")
+db = mongo_client.frauddb
+collection = db.transactions
+
+# Set up Kafka consumer
 consumer = KafkaConsumer(
     'transactions',
     bootstrap_servers='localhost:9092',
@@ -17,5 +24,12 @@ for message in consumer:
     try:
         txn = json.loads(raw)
         print(f"🔍 Received: {txn}")
+
+        # Insert into MongoDB
+        collection.insert_one(txn)
+        print("✅ Inserted into MongoDB!\n")
+
     except json.JSONDecodeError:
         print(f"⚠️ Skipped malformed message: {raw}")
+    except Exception as e:
+        print(f"💥 Error inserting to MongoDB: {e}")
