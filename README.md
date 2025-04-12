@@ -31,3 +31,28 @@ This project simulates a payment system (like ACH/Wire/Credit Card) where transa
  Use Docker to containerize services
 
  Add optional AWS Glue job to clean batch data
+
+
+   +------------------------+     
+  |  Fake Transaction Gen  |     ← Python script using Faker
+  +-----------+------------+     
+              |
+              v
+       +------+--------+          
+       |    Kafka      |     ← Real-time message broker
+       +------+--------+          
+              |
+              v
+   +----------+-----------+       
+   | Spark Streaming Job  |     ← Detect fraud in real-time
+   +----------+-----------+       
+     |                    |
+     v                    v
++---------+         +------------+
+| MongoDB |         |  AWS S3    |   ← Store flagged & all transactions
++---------+         +------------+
+                         |
+                         v
+                  +--------------+
+                  | Databricks   |   ← Visualize patterns
+                  +--------------+
