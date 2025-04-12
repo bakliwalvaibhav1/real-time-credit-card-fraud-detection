@@ -1,0 +1,16 @@
+# Virtual environment
+venv/
+
+# Bytecode
+__pycache__/
+*.pyc
+
+# VSCode or PyCharm project files
+.vscode/
+.idea/
+
+# Mac system files
+.DS_Store
+
+# Environment files
+.env
