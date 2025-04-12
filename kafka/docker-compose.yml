@@ -19,5 +19,16 @@ services:
     volumes:
       - kafka_data:/bitnami/kafka
 
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: frauddb
+
 volumes:
   kafka_data:
+  mongo_data:
