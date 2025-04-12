@@ -1,5 +1,11 @@
 dnspython==2.7.0
 Faker==37.1.0
 kafka-python==2.1.5
+numpy==2.2.4
+pandas==2.2.3
+pyarrow==19.0.1
 pymongo==4.12.0
+python-dateutil==2.9.0.post0
+pytz==2025.2
+six==1.17.0
 tzdata==2025.2
