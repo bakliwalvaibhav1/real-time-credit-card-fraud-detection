@@ -44,3 +44,18 @@ else:
     top_users = df["user_id"].value_counts().head(10)
     st.bar_chart(top_users)
 
+    st.divider()
+    st.subheader("🧾 Recent Flagged Transactions")
+
+    # Sort by newest first
+    df_sorted = df.sort_values(by="timestamp", ascending=False)
+
+    # Display selected columns
+    columns_to_show = ["timestamp", "user_id", "amount", "card_type", "location"]
+    for col in columns_to_show:
+        if col not in df_sorted.columns:
+            df_sorted[col] = "N/A"  # fallback for missing fields
+
+    # Limit to recent 50
+    st.dataframe(df_sorted[columns_to_show].head(50), use_container_width=True)
+
