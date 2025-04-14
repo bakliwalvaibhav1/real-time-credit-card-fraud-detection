@@ -30,7 +30,7 @@ last_locations = {}
 def is_suspicious(txn: dict) -> bool:
     txn_time = datetime.fromisoformat(txn["timestamp"])
 
-    # High Amount Rule
+    # Rule 1: High Amount Rule
     if txn["amount"] > 900:
         return True
 
@@ -48,10 +48,9 @@ def is_suspicious(txn: dict) -> bool:
     if 0 <= hour < 5:
         return True
 
-    # ✅ Geo Mismatch Rule
+    # Rule 4: Geo Mismatch Rule
     user = txn["user_id"]
     loc = txn.get("location")
-
     if user in last_locations:
         if last_locations[user] != loc:
             return True  # location mismatch

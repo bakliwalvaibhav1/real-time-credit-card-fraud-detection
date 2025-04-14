@@ -53,8 +53,6 @@ services:
       - mongo
     restart: always
 
-
-
 volumes:
   kafka_data:
   mongo_data:
