@@ -27,4 +27,4 @@ while True:
     except Exception as e:
         print(f"💥 Unexpected error: {e}")
 
-    time.sleep(1)
+    time.sleep(0.2)
