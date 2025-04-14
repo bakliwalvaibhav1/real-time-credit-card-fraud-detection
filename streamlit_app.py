@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from pymongo import MongoClient
+import io
 
 # MongoDB setup
 client = MongoClient("mongodb://localhost:27017")
@@ -58,7 +59,17 @@ else:
     if user_filter != "All":
         filtered_df = filtered_df[filtered_df["user_id"] == user_filter]
 
+
     # --- METRICS ---
+
+    csv = filtered_df.to_csv(index=False)
+    download_button = st.download_button(
+        label="📤 Download Filtered Transactions as CSV",
+        data=csv,
+        file_name="flagged_transactions.csv",
+        mime="text/csv",
+    )
+
     st.divider()
     col1, col2 = st.columns(2)
     col1.metric("🔁 Total Transactions", all_txns.count_documents({}))
