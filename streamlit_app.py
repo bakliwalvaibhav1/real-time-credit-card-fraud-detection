@@ -1,5 +1,4 @@
 import streamlit as st
-from streamlit_autorefresh import st_autorefresh
 import pandas as pd
 from pymongo import MongoClient
 
@@ -13,49 +12,83 @@ flagged_txns = db.flagged_transactions
 st.set_page_config(page_title="Fraud Detection Dashboard", layout="wide")
 st.title("🛡️ Real-Time Fraud Detection Dashboard")
 
-# Stats
-col1, col2 = st.columns(2)
-st.divider()
-st.subheader("📈 Fraud Analytics")
-
-# Auto-refresh every 30 seconds
-st_autorefresh(interval=30_000, key="data_refresh")
-
 # Load flagged transactions
 data = list(flagged_txns.find())
+for txn in data:
+    txn.pop("_id", None)
 
-if not data:
-    st.warning("No flagged transactions found.")
+df = pd.DataFrame(data)
+
+if df.empty:
+    st.warning("⚠️ No flagged transactions found.")
 else:
-    for txn in data:
-        txn.pop("_id", None)
-    df = pd.DataFrame(data)
     df["timestamp"] = pd.to_datetime(df["timestamp"])
 
-    # --- Charts ---
+    # --- SIDEBAR FILTERS ---
+    st.sidebar.header("🔎 Filters")
 
-    # Line chart: amount over time
+    # Amount range
+    min_amt, max_amt = st.sidebar.slider(
+        "Amount Range",
+        min_value=float(df["amount"].min()),
+        max_value=float(df["amount"].max()),
+        value=(float(df["amount"].min()), float(df["amount"].max()))
+    )
+
+    # Card type multiselect
+    card_types = st.sidebar.multiselect(
+        "Card Type",
+        options=df["card_type"].unique().tolist(),
+        default=df["card_type"].unique().tolist()
+    )
+
+    # User ID dropdown
+    user_filter = st.sidebar.selectbox(
+        "User ID",
+        options=["All"] + sorted(df["user_id"].unique().tolist())
+    )
+
+    # Apply filters
+    filtered_df = df[
+        (df["amount"] >= min_amt) &
+        (df["amount"] <= max_amt) &
+        (df["card_type"].isin(card_types))
+    ]
+
+    if user_filter != "All":
+        filtered_df = filtered_df[filtered_df["user_id"] == user_filter]
+
+    # --- METRICS ---
+    st.divider()
+    col1, col2 = st.columns(2)
+    col1.metric("🔁 Total Transactions", all_txns.count_documents({}))
+    col2.metric("🚨 Flagged as Fraud", flagged_txns.count_documents({}))
+
+    # --- CHARTS ---
+    st.divider()
+
+    # Line chart: fraud amount over time
     time_series = (
-        df.groupby(pd.Grouper(key="timestamp", freq="1min"))["amount"]
+        filtered_df.groupby(pd.Grouper(key="timestamp", freq="1min"))["amount"]
         .sum()
         .reset_index()
     )
+    st.markdown("#### 📈 Total Fraud Amount Over Time (1-min buckets)")
     st.line_chart(time_series.rename(columns={"timestamp": "index"}).set_index("index"))
 
-    # Bar chart: top fraud users
-    top_users = df["user_id"].value_counts().head(10)
+    # Bar chart: top flagged users
+    st.markdown("#### 📊 Top 10 Fraudster User IDs (by frequency)")
+    top_users = filtered_df["user_id"].value_counts().head(10)
     st.bar_chart(top_users)
 
-    # --- Table ---
-
+    # --- TABLE ---
     st.divider()
-    st.subheader("🧾 Recent Flagged Transactions")
+    st.markdown("#### 📋 Most Recent Flagged Transactions (last 50)")
 
-    df_sorted = df.sort_values(by="timestamp", ascending=False)
+    df_sorted = filtered_df.sort_values(by="timestamp", ascending=False)
     columns_to_show = ["timestamp", "user_id", "amount", "card_type", "location"]
     for col in columns_to_show:
         if col not in df_sorted.columns:
             df_sorted[col] = "N/A"
 
     st.dataframe(df_sorted[columns_to_show].head(50), use_container_width=True)
-
