@@ -26,21 +26,24 @@ print("⏳ Waiting for transactions...\n")
 recent_txns = defaultdict(lambda: deque(maxlen=10))  # store last few timestamps per user
 
 def is_suspicious(txn: dict) -> bool:
+    txn_time = datetime.fromisoformat(txn["timestamp"])
+
     # High Amount Rule
     if txn["amount"] > 900:
         return True
 
-    # High Frequency Rule
+    # Rule 2: High Frequency (same as before)
     user_id = txn["user_id"]
-    txn_time = datetime.fromisoformat(txn["timestamp"])
     recent = recent_txns[user_id]
-
-    # Remove old timestamps
     recent = deque([t for t in recent if (txn_time - t).total_seconds() <= 10])
     recent.append(txn_time)
     recent_txns[user_id] = recent
-
     if len(recent) >= 3:
+        return True
+
+    # Rule 3: Unusual Hour
+    hour = txn_time.hour
+    if 0 <= hour < 5:
         return True
 
     return False
