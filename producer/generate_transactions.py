@@ -4,6 +4,8 @@ import time
 import random
 from datetime import datetime, timezone
 
+locations = ["New York", "London", "Tokyo", "Mumbai", "Sydney", "Paris", "Toronto"]
+
 fake = Faker()
 
 def generate_transaction():
@@ -12,7 +14,8 @@ def generate_transaction():
         "user_id": f"user_{random.randint(1, 1000)}",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "amount": round(random.uniform(1.00, 1000.00), 2),
-        "location": fake.city() + ", " + fake.country(),
+        # "location": fake.city() + ", " + fake.country(),
+        "location": random.choice(locations),
         "merchant": fake.company(),
         "card_type": random.choice(["VISA", "MASTERCARD", "AMEX"])
     }

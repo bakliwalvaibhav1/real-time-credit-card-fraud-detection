@@ -25,6 +25,8 @@ print("⏳ Waiting for transactions...\n")
 # In-memory tracker for high-frequency detection
 recent_txns = defaultdict(lambda: deque(maxlen=10))  # store last few timestamps per user
 
+last_locations = {}
+
 def is_suspicious(txn: dict) -> bool:
     txn_time = datetime.fromisoformat(txn["timestamp"])
 
@@ -45,6 +47,15 @@ def is_suspicious(txn: dict) -> bool:
     hour = txn_time.hour
     if 0 <= hour < 5:
         return True
+
+    # ✅ Geo Mismatch Rule
+    user = txn["user_id"]
+    loc = txn.get("location")
+
+    if user in last_locations:
+        if last_locations[user] != loc:
+            return True  # location mismatch
+    last_locations[user] = loc
 
     return False
 
