@@ -1,6 +1,6 @@
 import pandas as pd
 from pymongo import MongoClient
-from datetime import datetime
+from datetime import datetime, timezone
 import os
 
 # Connect to MongoDB
@@ -23,7 +23,7 @@ for txn in transactions:
 df = pd.DataFrame(transactions)
 
 # Timestamp-based folder
-now = datetime.utcnow()
+now = datetime.now(timezone.utc)
 day = now.strftime("%Y-%m-%d")
 hour = now.strftime("hour=%H")
 output_dir = f"storage/exported/{day}/{hour}"
