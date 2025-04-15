@@ -1,4 +1,4 @@
-# 🚨 Real-Time Fraud Detection Pipeline 🛡️
+# 🚨 Real-Time Credit Cards Fraud Detection Pipeline 🛡️
 
 A production-grade, cloud-deployable pipeline that simulates and detects financial fraud in real time using Kafka, Python, and MongoDB. The pipeline processes transactions and flags suspicious activity such as high-frequency or high-value anomalies. Streamlit is used to visualize flagged transactions via a live dashboard.
 
@@ -19,6 +19,7 @@ A production-grade, cloud-deployable pipeline that simulates and detects financi
 - **Consumer**: Listens to Kafka, applies fraud rules, and stores flagged data in MongoDB
 - **MongoDB**: Stores only fraudulent transactions for lightweight querying
 - **Streamlit Dashboard**: Auto-refreshing UI displaying flagged transactions in real time
+![Architecture](screenshots/fraud-detection-architecture.png)
 
 ## 🛠️ Technologies Used
 ![My Skills](https://skillicons.dev/icons?i=kafka,python,mongo,docker,aws&theme=light)
@@ -115,3 +116,7 @@ Displays:
 - 🧾 Latest flagged transactions
 
 Auto-refreshes every second using `streamlit-autorefresh`.
+
+![Streamlit Dashboard](screenshots/streamlit_dashboard.png)
+
+![Streamlit Dashboard](screenshots/streamlit_dashboard1.png)
