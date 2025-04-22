@@ -81,7 +81,7 @@ txn_count = 0
 
 for year in range(START_YEAR, END_YEAR + 1):
     year_dir = os.path.join(BASE_DIR, str(year))
-    os.makedirs(year_dir, exist_ok=True)
+    os.makedirs(f"year={year_dir}", exist_ok=True)
 
     # Grow users and txns each year
     user_count = USERS_PER_YEAR + (year - START_YEAR) * 50  # 50 new users per year
